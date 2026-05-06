@@ -187,15 +187,6 @@ def register():
 
 
         # =========================
-        # GENERATE OTP
-        # =========================
-
-        verification_code = str(
-            random.randint(100000, 999999)
-        )
-
-
-        # =========================
         # CREATE USER
         # =========================
 
@@ -215,10 +206,9 @@ def register():
 
             role="member",
 
-            is_verified=False,
+            is_verified=True,
 
-            verification_code=
-            verification_code
+            verification_code=None
 
         )
 
@@ -228,84 +218,12 @@ def register():
 
 
         # =========================
-        # SEND VERIFICATION MAIL
+        # REDIRECT TO LOGIN
         # =========================
 
-        msg = Message(
-
-            "Verify Your Account",
-
-            sender=app.config[
-                "MAIL_USERNAME"
-            ],
-
-            recipients=[email]
-
-        )
-
-        msg.body = f"""
-Hello {full_name},
-
-Welcome to Team Task Manager.
-
-Your verification code is:
-
-{verification_code}
-
-Enter this code to verify your account.
-
-Thank You.
-"""
-
-        mail.send(msg)
-
-
-        # =========================
-        # REDIRECT
-        # =========================
-
-        return redirect(
-            f"/verify-email/{new_user.id}"
-        )
+        return redirect("/login")
 
     return render_template("register.html")
-
-
-# ==================================================
-# VERIFY EMAIL
-# ==================================================
-
-@app.route(
-    "/verify-email/<int:user_id>",
-    methods=["GET", "POST"]
-)
-def verify_email(user_id):
-
-    user = User.query.get_or_404(
-        user_id
-    )
-
-    if request.method == "POST":
-
-        code = request.form["code"]
-
-        if code == user.verification_code:
-
-            user.is_verified = True
-
-            user.verification_code = None
-
-            db.session.commit()
-
-            return redirect("/login")
-
-        return "Invalid verification code"
-
-    return render_template(
-        "verify_email.html",
-        user=user
-    )
-
 
 # ==================================================
 # FORGOT PASSWORD
