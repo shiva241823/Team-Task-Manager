@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Member Progress</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
+    <div class="sidebar">
+
+        <h2>Admin Panel</h2>
+
+        <a href="/admin">Dashboard</a>
+
+        <a href="/create-project">Create Project</a>
+
+        <a href="/view-projects">View Projects</a>
+
+        <a href="/create-task">Create Task</a>
+
+        <a href="/member-progress">View Tasks</a>
+
+        <a href="/create-member">Manage Members</a>
+
+        <a href="/logout">Logout</a>
+
+    </div>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+
+    <div class="main-content">
+
+        <!-- NAVBAR -->
+
+        <div class="navbar">
+
+            <h2>View Tasks</h2>
+
+            <div>
+
+                <a href="/logout">
+                    Logout
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- TITLE -->
+
+        <div style="margin-top:30px;">
+
+            <h1>Task Progress Tracking</h1>
+
+            <p style="
+                margin-top:10px;
+                color:gray;
+            ">
+                View progress, responses,
+                and task completion details
+                submitted by members.
+            </p>
+
+        </div>
+
+
+        <!-- SEARCH -->
+
+        <input
+            type="text"
+            id="progressSearch"
+            class="search-input"
+            placeholder="Search tasks..."
+            style="margin-top:30px;"
+            onkeyup="
+                searchTable(
+                    'progressSearch',
+                    'progressTable'
+                )
+            "
+        >
+
+
+        <!-- TABLE -->
+
+        <table
+            id="progressTable"
+            style="margin-top:20px;"
+        >
+
+            <tr>
+
+                <th>Task</th>
+
+                <th>Project</th>
+
+                <th>Overall Progress</th>
+
+                <th>Status</th>
+
+                <th>Actions</th>
+
+            </tr>
+
+            {% if tasks %}
+
+                {% for task in tasks %}
+
+                <tr>
+
+                    <!-- TASK -->
+
+                    <td>
+
+                        {{ task.title }}
+
+                    </td>
+
+
+                    <!-- PROJECT -->
+
+                    <td>
+
+                        {% if task.project %}
+
+                            {{ task.project.title }}
+
+                        {% else %}
+
+                            No Project
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- PROGRESS -->
+
+                    <td>
+
+                        <div
+                            class="progress-bar-container"
+                        >
+
+                            <div
+                                class="progress-bar-fill"
+                                data-progress="
+                                    {{ task.cumulative_progress }}
+                                "
+                            >
+
+                                {{ task.cumulative_progress }}%
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- STATUS -->
+
+                    <td>
+
+                        {% if task.overall_status == "Pending" %}
+
+                            <span class="status pending">
+
+                                Pending
+
+                            </span>
+
+                        {% elif task.overall_status == "In Progress" %}
+
+                            <span class="status progress">
+
+                                In Progress
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="status completed">
+
+                                Completed
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- ACTIONS -->
+
+                    <td>
+
+                        <a
+                            href="/task-progress/{{ task.id }}"
+                            class="btn btn-primary"
+                        >
+                            View Members
+                        </a>
+
+                        <a
+                            href="/edit-task/{{ task.id }}"
+                            class="btn btn-warning"
+                        >
+                            Edit
+                        </a>
+
+                        <a
+                            href="/delete-task/{{ task.id }}"
+                            class="btn btn-danger"
+                            onclick="
+                                return confirmDelete(
+                                    'Delete this task?'
+                                )
+                            "
+                        >
+                            Delete
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="5"
+                        style="
+                            text-align:center;
+                            padding:30px;
+                            color:gray;
+                        "
+                    >
+
+                        No tasks found.
+
+                    </td>
+
+                </tr>
+
+            {% endif %}
+
+        </table>
+
+    </div>
+
+
+    <!-- SCRIPT -->
+
+    <script
+        src="{{ url_for('static', filename='script.js') }}"
+    ></script>
+
+</body>
+
+</html>

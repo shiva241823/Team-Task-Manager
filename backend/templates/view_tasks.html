@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>View Tasks</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
+    <div class="sidebar">
+
+        {% if session.role == "admin" %}
+
+            <h2>Admin Panel</h2>
+
+            <a href="/admin">Dashboard</a>
+
+            <a href="/create-project">Create Project</a>
+
+            <a href="/view-projects">View Projects</a>
+
+            <a href="/create-task">Create Task</a>
+
+            <a href="/create-member">Manage Members</a>
+
+            <a href="/member-progress">
+            View Tasks
+        </a>
+
+        {% else %}
+
+            <h2>Member Panel</h2>
+
+            <a href="/member">Dashboard</a>
+
+            <a href="/view-projects">My Projects</a>
+
+        {% endif %}
+
+        <a href="/logout">Logout</a>
+
+    </div>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+
+    <div class="main-content">
+
+        <!-- NAVBAR -->
+
+        <div class="navbar">
+
+            <h2>{{ project.title }}</h2>
+
+            <div>
+
+                <a href="/logout">
+                    Logout
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- PAGE TITLE -->
+
+        <div style="margin-top:30px;">
+
+            <h1>Project Tasks</h1>
+
+            <p style="
+                margin-top:10px;
+                color:gray;
+            ">
+                View and manage all tasks related to this project.
+            </p>
+
+        </div>
+
+
+        <!-- SEARCH -->
+
+        <input
+            type="text"
+            id="taskSearch"
+            class="search-input"
+            placeholder="Search tasks..."
+            style="margin-top:30px;"
+            onkeyup="
+                searchTable(
+                    'taskSearch',
+                    'taskTable'
+                )
+            "
+        >
+
+
+        <!-- TASK TABLE -->
+
+        <table
+            id="taskTable"
+            style="margin-top:20px;"
+        >
+
+            <tr>
+
+                <th>Task</th>
+
+                <th>Description</th>
+
+                <th>Assigned Members</th>
+
+                <th>Status</th>
+
+                <th>Progress</th>
+
+                <th>Due Date</th>
+
+                <th>Actions</th>
+
+            </tr>
+
+
+            {% for task in tasks %}
+
+            <tr>
+
+                <!-- TASK -->
+
+                <td>
+
+                    {{ task.title }}
+
+                </td>
+
+
+                <!-- DESCRIPTION -->
+
+                <td>
+
+                    {{ task.description }}
+
+                </td>
+
+
+                <!-- ASSIGNED MEMBERS -->
+
+                <td>
+
+                    {% for assignment in task.assignments %}
+
+                        {% if session.role == "admin"
+                        or assignment.user_id == session.user_id %}
+
+                        <div class="assignment-box">
+
+                            <strong>
+
+                                {{ assignment.user.full_name }}
+
+                            </strong>
+
+                            <br>
+
+                            <small>
+
+                                Progress:
+                                {{ assignment.progress }}%
+
+                                |
+
+                                Status:
+                                {{ assignment.status }}
+
+                            </small>
+
+                        </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </td>
+
+
+                <!-- OVERALL STATUS -->
+
+                <td>
+
+                    {% if task.overall_status == "Pending" %}
+
+                        <span class="status pending">
+
+                            Pending
+
+                        </span>
+
+                    {% elif task.overall_status == "In Progress" %}
+
+                        <span class="status progress">
+
+                            In Progress
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="status completed">
+
+                            Completed
+
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+
+                <!-- CUMULATIVE PROGRESS -->
+
+                <td>
+
+                    <div class="progress-bar-container">
+
+                        <div
+                            class="progress-bar-fill"
+                            style="
+                                width: {{ task.cumulative_progress }}%;
+                            "
+                        >
+
+                            {{ task.cumulative_progress }}%
+
+                        </div>
+
+                    </div>
+
+                </td>
+
+
+                <!-- DUE DATE -->
+
+                <td>
+
+                    {{ task.due_date }}
+
+                </td>
+
+
+                <!-- ACTIONS -->
+
+                <td>
+
+                    {% if session.role == "admin" %}
+
+                        <a
+                            href="/edit-task/{{ task.id }}"
+                            class="btn btn-warning"
+                        >
+                            Edit
+                        </a>
+
+                        <a
+                            href="/delete-task/{{ task.id }}"
+                            class="btn btn-danger"
+                            onclick="
+                                return confirmDelete(
+                                    'Delete this task?'
+                                )
+                            "
+                        >
+                            Delete
+                        </a>
+
+                    {% else %}
+
+                        {% for assignment in task.assignments %}
+
+                            {% if assignment.user_id == session.user_id %}
+
+                                <a
+                                    href="/update-task/{{ assignment.id }}"
+                                    class="btn btn-primary"
+                                >
+                                    Update
+                                </a>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+
+    <script
+        src="{{ url_for('static', filename='script.js') }}"
+    ></script>
+
+</body>
+</html>

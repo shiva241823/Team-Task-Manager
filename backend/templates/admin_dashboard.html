@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Admin Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
+    <div class="sidebar">
+
+        <h2>Admin Panel</h2>
+
+        <a href="/admin">
+            Dashboard
+        </a>
+
+        <a href="/create-project">
+            Create Project
+        </a>
+
+        <a href="/view-projects">
+            View Projects
+        </a>
+
+        <a href="/create-task">
+            Create Task
+        </a>
+
+        <a href="/member-progress">
+            View Tasks
+        </a>
+
+        <a href="/create-member">
+            Manage Members
+        </a>
+
+        <a href="/logout">
+            Logout
+        </a>
+
+    </div>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+
+    <div class="main-content">
+
+
+        <!-- =========================
+             NAVBAR
+        ========================== -->
+
+        <div class="navbar">
+
+            <h2>
+
+                Welcome, {{ session.username }}
+
+            </h2>
+
+            <div>
+
+                <a href="/logout">
+
+                    Logout
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             PAGE TITLE
+        ========================== -->
+
+        <div style="margin-top:30px;">
+
+            <h1>Dashboard Overview</h1>
+
+            <p style="
+                margin-top:10px;
+                color:gray;
+            ">
+
+                Track projects, tasks,
+                members and team performance.
+
+            </p>
+
+        </div>
+
+
+        <!-- =========================
+             DASHBOARD CARDS
+        ========================== -->
+
+        <div class="card-container">
+
+            <div class="card">
+
+                <h3>Total Projects</h3>
+
+                <p>{{ total_projects }}</p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Total Tasks</h3>
+
+                <p>{{ total_tasks }}</p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Completed Tasks</h3>
+
+                <p>{{ completed_tasks }}</p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Pending Tasks</h3>
+
+                <p>{{ pending_tasks }}</p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Overdue Tasks</h3>
+
+                <p>{{ overdue_tasks }}</p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Total Members</h3>
+
+                <p>{{ members|length }}</p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             PROJECT SECTION
+        ========================== -->
+
+        <div style="margin-top:50px;">
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:20px;
+            ">
+
+                <h2>Projects</h2>
+
+                <a
+                    href="/create-project"
+                    class="btn btn-primary"
+                >
+
+                    + Create Project
+
+                </a>
+
+            </div>
+
+
+            <!-- SEARCH -->
+
+            <input
+                type="text"
+                id="projectSearch"
+                class="search-input"
+                placeholder="Search projects..."
+                onkeyup="
+                    searchTable(
+                        'projectSearch',
+                        'projectTable'
+                    )
+                "
+            >
+
+
+            <!-- TABLE -->
+
+            <table id="projectTable">
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Project</th>
+
+                    <th>Description</th>
+
+                    <th>Total Tasks</th>
+
+                    <th>Created By</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+
+                {% for project in projects %}
+
+                <tr>
+
+                    <td>{{ project.id }}</td>
+
+                    <td>{{ project.title }}</td>
+
+                    <td>{{ project.description }}</td>
+
+                    <td>{{ project.tasks|length }}</td>
+
+                    <td>{{ project.created_by }}</td>
+
+                    <td>
+
+                        <a
+                            href="/edit-project/{{ project.id }}"
+                            class="btn btn-warning"
+                        >
+
+                            Edit
+
+                        </a>
+
+                        <a
+                            href="/delete-project/{{ project.id }}"
+                            class="btn btn-danger"
+                            onclick="
+                                return confirmDelete(
+                                    'Delete this project?'
+                                )
+                            "
+                        >
+
+                            Delete
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+
+        <!-- =========================
+             MEMBERS SECTION
+        ========================== -->
+
+        <div style="margin-top:60px;">
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                margin-bottom:20px;
+            ">
+
+                <h2>Team Members</h2>
+
+                <a
+                    href="/create-member"
+                    class="btn btn-success"
+                >
+
+                    + Add Member
+
+                </a>
+
+            </div>
+
+
+            <!-- TABLE -->
+
+            <table>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Full Name</th>
+
+                    <th>Username</th>
+
+                    <th>Email</th>
+
+                    <th>Assigned Tasks</th>
+
+                </tr>
+
+
+                {% for member in members %}
+
+                <tr>
+
+                    <td>{{ member.id }}</td>
+
+                    <td>{{ member.full_name }}</td>
+
+                    <td>{{ member.username }}</td>
+
+                    <td>{{ member.email }}</td>
+
+                    <td>
+
+                        {{ member.task_assignments|length }}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+
+        <!-- =========================
+     TASK MANAGEMENT
+========================= -->
+
+<div style="
+    margin-top:60px;
+    margin-bottom:50px;
+">
+
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:20px;
+    ">
+
+        <h2>Task Management</h2>
+
+        <a
+            href="/create-task"
+            class="btn btn-primary"
+        >
+            + Create Task
+        </a>
+
+    </div>
+
+
+    <!-- SEARCH -->
+
+    <input
+        type="text"
+        id="taskSearch"
+        class="search-input"
+        placeholder="Search tasks..."
+        onkeyup="
+            searchTable(
+                'taskSearch',
+                'taskTable'
+            )
+        "
+    >
+
+
+    <!-- TABLE -->
+
+    <table id="taskTable">
+
+        <tr>
+
+            <th>Task</th>
+
+            <th>Project</th>
+
+            <th>Assigned Members</th>
+
+            <th>Status</th>
+
+            <th>Progress</th>
+
+            <th>Due Date</th>
+
+            <th>Actions</th>
+
+        </tr>
+
+
+        {% for task in all_tasks %}
+
+        <tr>
+
+            <!-- TASK -->
+
+            <td>
+
+                {{ task.title }}
+
+            </td>
+
+
+            <!-- PROJECT -->
+
+            <td>
+
+                {% if task.project %}
+
+                    {{ task.project.title }}
+
+                {% else %}
+
+                    No Project
+
+                {% endif %}
+
+            </td>
+
+
+            <!-- ASSIGNED MEMBERS -->
+
+            <td>
+
+                {% if task.assignments %}
+
+                    {% for assignment in task.assignments %}
+
+                        <div class="assignment-box">
+
+                            <strong>
+
+                                {{ assignment.user.full_name }}
+
+                            </strong>
+
+                            <br>
+
+                            <small>
+
+                                Progress:
+                                {{ assignment.progress }}%
+
+                                |
+
+                                Status:
+                                {{ assignment.status }}
+
+                            </small>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <span style="color:gray;">
+
+                        No Members Assigned
+
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+
+            <!-- STATUS -->
+
+            <td>
+
+                {% if task.overall_status == "Pending" %}
+
+                    <span class="status pending">
+
+                        Pending
+
+                    </span>
+
+                {% elif task.overall_status == "In Progress" %}
+
+                    <span class="status progress">
+
+                        In Progress
+
+                    </span>
+
+                {% else %}
+
+                    <span class="status completed">
+
+                        Completed
+
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+
+            <!-- PROGRESS -->
+
+            <td>
+
+                <div class="progress-bar-container">
+
+    <div
+        class="progress-bar-fill"
+        data-progress="{{ task.cumulative_progress }}"
+    >
+
+        {{ task.cumulative_progress }}%
+
+    </div>
+
+</div>
+
+            </td>
+
+
+            <!-- DUE DATE -->
+
+            <td>
+
+                {{ task.due_date }}
+
+            </td>
+
+
+            <!-- ACTIONS -->
+
+            <td>
+
+                <a
+                    href="/edit-task/{{ task.id }}"
+                    class="btn btn-warning"
+                >
+                    Edit
+                </a>
+
+                <a
+                    href="/delete-task/{{ task.id }}"
+                    class="btn btn-danger"
+                    onclick="
+                        return confirmDelete(
+                            'Delete this task?'
+                        )
+                    "
+                >
+                    Delete
+                </a>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+    <!-- =========================
+         SCRIPT
+    ========================== -->
+
+    <script
+        src="{{ url_for('static', filename='script.js') }}"
+    ></script>
+
+</body>
+
+</html>
