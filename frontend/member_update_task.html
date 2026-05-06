@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Update Task</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+
+    <div class="sidebar">
+
+        <h2>Member Panel</h2>
+
+        <a href="/member">Dashboard</a>
+
+        <a href="/view-projects">My Projects</a>
+
+        <a href="/logout">Logout</a>
+
+    </div>
+
+
+    <!-- MAIN CONTENT -->
+
+    <div class="main-content">
+
+
+        <!-- NAVBAR -->
+
+        <div class="navbar">
+
+            <h2>Update Task</h2>
+
+            <div>
+
+                <a href="/logout">
+                    Logout
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- PAGE TITLE -->
+
+        <div style="margin-top:30px;">
+
+            <h1>Task Work Update</h1>
+
+            <p style="
+                margin-top:10px;
+                color:gray;
+            ">
+                Update your progress and submit work response.
+            </p>
+
+        </div>
+
+
+        <!-- FORM SECTION -->
+
+        <div style="margin-top:40px;">
+
+            <div class="form-container">
+
+                <form method="POST">
+
+
+                    <!-- TASK TITLE -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Task Title
+                        </label>
+
+                        <input
+                            type="text"
+                            value="{{ assignment.task.title }}"
+                            readonly
+                        >
+
+                    </div>
+
+
+                    <!-- PROJECT -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Project
+                        </label>
+
+                        <input
+                            type="text"
+                            value="{{ assignment.task.project.title }}"
+                            readonly
+                        >
+
+                    </div>
+
+
+                    <!-- DESCRIPTION -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Task Description
+                        </label>
+
+                        <textarea readonly>{{ assignment.task.description }}</textarea>
+
+                    </div>
+
+
+                    <!-- DUE DATE -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Due Date
+                        </label>
+
+                        <input
+                            type="text"
+                            value="{{ assignment.task.due_date }}"
+                            readonly
+                        >
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Task Status
+                        </label>
+
+                        <select
+                            name="status"
+                            id="status"
+                            required
+                        >
+
+                            <option
+                                value="Pending"
+                                {% if assignment.status == "Pending" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Pending
+                            </option>
+
+                            <option
+                                value="In Progress"
+                                {% if assignment.status == "In Progress" %}
+                                    selected
+                                {% endif %}
+                            >
+                                In Progress
+                            </option>
+
+                            <option
+                                value="Completed"
+                                {% if assignment.status == "Completed" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Completed
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- PROGRESS -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Progress (%)
+                        </label>
+
+                        <input
+                            type="number"
+                            name="progress"
+                            id="progress"
+                            min="0"
+                            max="100"
+                            value="{{ assignment.progress }}"
+                            required
+
+                            oninput="
+                                updateTaskStatus(
+                                    'progress',
+                                    'status'
+                                )
+                            "
+                        >
+
+                    </div>
+
+
+                    <!-- PROGRESS BAR -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Current Progress
+                        </label>
+
+                        <div class="progress-bar-container">
+
+                            <div
+                                class="progress-bar-fill"
+                                style="
+                                    width: {{ assignment.progress }}%;
+                                "
+                            >
+
+                                {{ assignment.progress }}%
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RESPONSE -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Work Response / Update
+                        </label>
+
+                        <textarea
+                            name="member_response"
+                            placeholder="Describe your completed work..."
+                            required
+                        >{% if assignment.member_response %}{{ assignment.member_response }}{% endif %}</textarea>
+
+                    </div>
+
+
+                    <!-- OVERALL TEAM PROGRESS -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Overall Team Progress
+                        </label>
+
+                        <div class="progress-bar-container">
+
+                            <div
+                                class="progress-bar-fill"
+                                style="
+                                    width: {{ assignment.task.cumulative_progress }}%;
+                                "
+                            >
+
+                                {{ assignment.task.cumulative_progress }}%
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- BUTTONS -->
+
+                    <div style="
+                        margin-top:30px;
+                        display:flex;
+                        gap:10px;
+                        flex-wrap:wrap;
+                    ">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            Submit Update
+                        </button>
+
+                        <a
+                            href="/member"
+                            class="btn btn-warning"
+                        >
+                            Back
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SCRIPT -->
+
+    <script
+        src="{{ url_for('static', filename='script.js') }}"
+    ></script>
+
+</body>
+
+</html>

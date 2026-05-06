@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Member Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+</head>
+
+<body>
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
+    <div class="sidebar">
+
+        <h2>Member Panel</h2>
+
+        <a href="/member">Dashboard</a>
+
+        <a href="/view-projects">My Projects</a>
+
+        <a href="/logout">Logout</a>
+
+    </div>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+
+    <div class="main-content">
+
+
+        <!-- =========================
+             NAVBAR
+        ========================== -->
+
+        <div class="navbar">
+
+            <h2>
+
+                Welcome, {{ session.username }}
+
+            </h2>
+
+            <div>
+
+                <a href="/logout">
+                    Logout
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             PAGE TITLE
+        ========================== -->
+
+        <div style="margin-top:30px;">
+
+            <h1>My Assigned Tasks</h1>
+
+            <p style="
+                margin-top:10px;
+                color:gray;
+            ">
+                View and manage tasks assigned to you.
+            </p>
+
+        </div>
+
+
+        <!-- =========================
+             SUMMARY CARDS
+        ========================== -->
+
+        <div class="card-container">
+
+            <div class="card">
+
+                <h3>Assigned Projects</h3>
+
+                <p>
+
+                    {{
+                        (
+                            new_tasks + old_tasks
+                        )
+                        | map(attribute='task.project_id')
+                        | unique
+                        | list
+                        | length
+                    }}
+
+                </p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Active Tasks</h3>
+
+                <p>{{ new_tasks|length }}</p>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Completed Tasks</h3>
+
+                <p>{{ old_tasks|length }}</p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             MY PROJECTS
+        ========================== -->
+
+        <div style="margin-top:50px;">
+
+            <h2>
+                My Assigned Projects
+            </h2>
+
+            <table style="margin-top:20px;">
+
+                <tr>
+
+                    <th>Project</th>
+
+                    <th>Total Tasks</th>
+
+                    <th>Completed Tasks</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+
+                {% set shown_projects = [] %}
+
+                {% for assignment in (new_tasks + old_tasks) %}
+
+                    {% if assignment.task.project.id not in shown_projects %}
+
+                        {% set _ = shown_projects.append(
+                            assignment.task.project.id
+                        ) %}
+
+                        <tr>
+
+                            <td>
+
+                                {{ assignment.task.project.title }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{
+                                    (
+                                        new_tasks + old_tasks
+                                    )
+                                    | selectattr(
+                                        "task.project.id",
+                                        "equalto",
+                                        assignment.task.project.id
+                                    )
+                                    | list
+                                    | length
+                                }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{
+                                    old_tasks
+                                    | selectattr(
+                                        "task.project.id",
+                                        "equalto",
+                                        assignment.task.project.id
+                                    )
+                                    | list
+                                    | length
+                                }}
+
+                            </td>
+
+
+                            <td>
+
+                                <a
+                                    href="/view-tasks/{{ assignment.task.project.id }}"
+                                    class="btn btn-primary"
+                                >
+                                    View Tasks
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+
+        <!-- =========================
+             ACTIVE TASKS
+        ========================== -->
+
+        <div style="margin-top:60px;">
+
+            <h2>Active Tasks</h2>
+
+
+            <!-- SEARCH -->
+
+            <input
+                type="text"
+                id="activeTaskSearch"
+                class="search-input"
+                placeholder="Search active tasks..."
+                style="margin-top:20px;"
+                onkeyup="
+                    searchTable(
+                        'activeTaskSearch',
+                        'activeTaskTable'
+                    )
+                "
+            >
+
+
+            <!-- TABLE -->
+
+            <table
+                id="activeTaskTable"
+                style="margin-top:20px;"
+            >
+
+                <tr>
+
+                    <th>Task</th>
+
+                    <th>Project</th>
+
+                    <th>Status</th>
+
+                    <th>Progress</th>
+
+                    <th>Due Date</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+
+                {% for assignment in new_tasks %}
+
+                <tr>
+
+                    <td>
+
+                        {{ assignment.task.title }}
+
+                    </td>
+
+
+                    <td>
+
+                        {{ assignment.task.project.title }}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if assignment.status == "Pending" %}
+
+                            <span class="status pending">
+
+                                Pending
+
+                            </span>
+
+                        {% elif assignment.status == "In Progress" %}
+
+                            <span class="status progress">
+
+                                In Progress
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="status completed">
+
+                                Completed
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {{ assignment.progress }}%
+
+                    </td>
+
+
+                    <td>
+
+                        {{ assignment.task.due_date }}
+
+                    </td>
+
+
+                    <td>
+
+                        <a
+                            href="/update-task/{{ assignment.id }}"
+                            class="btn btn-primary"
+                        >
+                            Update
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+
+        <!-- =========================
+             COMPLETED TASKS
+        ========================== -->
+
+        <div style="
+            margin-top:60px;
+            margin-bottom:50px;
+        ">
+
+            <h2>Completed Tasks</h2>
+
+
+            <!-- SEARCH -->
+
+            <input
+                type="text"
+                id="completedTaskSearch"
+                class="search-input"
+                placeholder="Search completed tasks..."
+                style="margin-top:20px;"
+                onkeyup="
+                    searchTable(
+                        'completedTaskSearch',
+                        'completedTaskTable'
+                    )
+                "
+            >
+
+
+            <!-- TABLE -->
+
+            <table
+                id="completedTaskTable"
+                style="margin-top:20px;"
+            >
+
+                <tr>
+
+                    <th>Task</th>
+
+                    <th>Project</th>
+
+                    <th>Status</th>
+
+                    <th>Progress</th>
+
+                    <th>Response</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+
+                {% for assignment in old_tasks %}
+
+                <tr>
+
+                    <td>
+
+                        {{ assignment.task.title }}
+
+                    </td>
+
+
+                    <td>
+
+                        {{ assignment.task.project.title }}
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="status completed">
+
+                            Completed
+
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        {{ assignment.progress }}%
+
+                    </td>
+
+
+                    <td>
+
+                        {% if assignment.member_response %}
+
+                            {{ assignment.member_response }}
+
+                        {% else %}
+
+                            No response submitted
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <a
+                            href="/update-task/{{ assignment.id }}"
+                            class="btn btn-warning"
+                        >
+                            View / Edit
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <script
+        src="{{ url_for('static', filename='script.js') }}"
+    ></script>
+
+</body>
+</html>
